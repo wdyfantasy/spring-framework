@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2020 the original author or authors.
+ * Copyright 2002-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,7 +132,6 @@ public class UrlPathHelper {
 	 * Whether configured to remove ";" (semicolon) content from the request URI.
 	 */
 	public boolean shouldRemoveSemicolonContent() {
-		checkReadOnly();
 		return this.removeSemicolonContent;
 	}
 
@@ -522,8 +521,8 @@ public class UrlPathHelper {
 			return UriUtils.decode(source, enc);
 		}
 		catch (UnsupportedCharsetException ex) {
-			if (logger.isWarnEnabled()) {
-				logger.warn("Could not decode request string [" + source + "] with encoding '" + enc +
+			if (logger.isDebugEnabled()) {
+				logger.debug("Could not decode request string [" + source + "] with encoding '" + enc +
 						"': falling back to platform default encoding; exception message: " + ex.getMessage());
 			}
 			return URLDecoder.decode(source);

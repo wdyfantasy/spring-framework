@@ -2,7 +2,7 @@ anchors:
   git-repo-resource-source: &git-repo-resource-source
     uri: ((github-repo))
     username: ((github-username))
-    password: ((github-password))
+    password: ((github-ci-release-token))
     branch: ((branch))
   gradle-enterprise-task-params: &gradle-enterprise-task-params
     GRADLE_ENTERPRISE_ACCESS_KEY: ((gradle_enterprise_secret_access_key))
@@ -26,7 +26,6 @@ anchors:
   docker-resource-source: &docker-resource-source
     username: ((docker-hub-username))
     password: ((docker-hub-password))
-    tag: ((milestone))
   slack-fail-params: &slack-fail-params
     text: >
       :concourse-failed: <https://ci.spring.io/teams/${BUILD_TEAM_NAME}/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_NAME}|${BUILD_PIPELINE_NAME} ${BUILD_JOB_NAME} failed!>
@@ -44,19 +43,34 @@ anchors:
     GITHUB_TOKEN: ((github-ci-release-token))
 
 resource_types:
+- name: registry-image
+  type: registry-image
+  source:
+    <<: *docker-resource-source
+    repository: concourse/registry-image-resource
+    tag: 1.7.1
 - name: artifactory-resource
   type: registry-image
   source:
+    <<: *docker-resource-source
     repository: springio/artifactory-resource
-    tag: 0.0.13
+    tag: 0.0.17
+- name: github-release
+  type: registry-image
+  source:
+    <<: *docker-resource-source
+    repository: concourse/github-release-resource
+    tag: 1.5.5
 - name: github-status-resource
   type: registry-image
   source:
+    <<: *docker-resource-source
     repository: dpb587/github-status-resource
     tag: master
 - name: slack-notification
   type: registry-image
   source:
+    <<: *docker-resource-source
     repository: cfcommunity/slack-notification-resource
     tag: latest
 resources:
@@ -85,12 +99,14 @@ resources:
   source:
     <<: *docker-resource-source
     repository: ((docker-hub-organization))/spring-framework-ci
+    tag: ((milestone))
 - name: ci-image-jdk11
   type: docker-image
   icon: docker
   source:
     <<: *docker-resource-source
     repository: ((docker-hub-organization))/spring-framework-ci-jdk11
+    tag: ((milestone))
 - name: artifactory-repo
   type: artifactory-resource
   icon: package-variant
@@ -261,7 +277,6 @@ jobs:
         download_artifacts: false
         save_build_info: true
     - task: promote
-      image: ci-image
       file: git-repo/ci/tasks/promote-version.yml
       params:
         RELEASE_TYPE: M
@@ -306,7 +321,6 @@ jobs:
         download_artifacts: false
         save_build_info: true
     - task: promote
-      image: ci-image
       file: git-repo/ci/tasks/promote-version.yml
       params:
         RELEASE_TYPE: RC
@@ -351,7 +365,6 @@ jobs:
         download_artifacts: true
         save_build_info: true
     - task: promote
-      image: ci-image
       file: git-repo/ci/tasks/promote-version.yml
       params:
         RELEASE_TYPE: RELEASE
