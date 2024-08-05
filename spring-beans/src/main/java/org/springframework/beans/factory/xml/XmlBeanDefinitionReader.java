@@ -299,6 +299,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	}
 
 
+	// TODO wdy hotswap 在本方法after增强
 	/**
 	 * Load bean definitions from the specified XML file.
 	 * @param resource the resource descriptor for the XML file
@@ -308,6 +309,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	@Override
 	public int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException {
 		return loadBeanDefinitions(new EncodedResource(resource));
+		// XmlBeanDefinitionScannerAgent.registerXmlBeanDefinitionScannerAgent(this, $1.getResource());
 	}
 
 	/**

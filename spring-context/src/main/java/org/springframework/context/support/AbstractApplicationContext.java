@@ -517,22 +517,35 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) {
 			// Prepare this context for refreshing.
+			// TODO 设置下启动时间，标记状态为活跃，初始化配置资源并校验等
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
+			// TODO 会调用refreshBeanFactory（重点1，启动持有的BeanFactory）
+			//！！！obtainFreshBeanFactory方法执行完后，配置里的bean信息就被转成一个个BeanDefinition存放在BeanFactory中，但还未创建任何bean
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
+			// TODO 给beanFactory配置一些属性，注册一些默认bean
 			prepareBeanFactory(beanFactory);
 
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
+				// TODO 调用refreshBeanFactory方法启动持有的BeanFactory对象
+				//  模板方法，让子类可以在执行下一步之前做一些操作
 				postProcessBeanFactory(beanFactory);
 
 				// Invoke factory processors registered as beans in the context.
+				// TODO 执行注册的BeanFactoryPostProcessor，允许我们对BeanFactory做一些操作
+				//  执行所有注册的BeanFactoryPostProcessor，即获取成员变量List<BeanFactoryPostProcessor>，进行一些一些排序判断后，遍历执行其postProcessBeanFactory(beanFactory)方法
+				//  BeanFactoryPostProcessor和下面的BeanPostProcessor其实都是一些回调接口，来实现用户对BeanFactory，Bean的特殊处理
+				//  由于这里是刷新BeanFactory，所以要执行BeanFactoryPostProcessor，而创建bean需要在最后面执行，所以只是注册BeanPostProcessor但不执行
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
+				// TODO 把所有注册的BeanPostProcessor类型的bean添加到BeanFactory中（BeanFactory在创建bean时会调用BeanPostProcessor的方法对bean做一些操作）
+				//  获取beanFactory中所有class为BeanPostProcessor.class的bean，也会进行一番排序后，遍历调用beanFactory.addBeanPostProcessor(postProcessor)注册到beanFactory中
+				//  就是为了在bean创建时进行一些处理，说明beanFactory在创建bean时会调用注册的BeanPostProcessor的相关方法
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
@@ -542,12 +555,15 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
+				// TODO 模版方法，子类做一些特殊处理
 				onRefresh();
 
 				// Check for listener beans and register them.
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
+				// TODO 创建所有非懒加载的单例bean并初始化
+				//  重点2 实例化所有非懒加载的单例bean
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.

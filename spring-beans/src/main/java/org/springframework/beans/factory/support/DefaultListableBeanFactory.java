@@ -185,11 +185,15 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	/** Whether bean definition metadata may be cached for all beans. */
 	private volatile boolean configurationFrozen;
 
+	// TODO wdy 所有构造器前面加上hotswap的init方法初始化springPlugin
 
 	/**
 	 * Create a new DefaultListableBeanFactory.
 	 */
 	public DefaultListableBeanFactory() {
+		// setCacheBeanMetadata(false);
+		// invoke hotswap spring plugin init method
+		// 当DefaultListableBeanFactory被实例化的时候SpringPlugin才开始实例化
 		super();
 	}
 
@@ -237,12 +241,14 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		this.allowBeanDefinitionOverriding = allowBeanDefinitionOverriding;
 	}
 
+	// TODO wdy hotswap本方法before插入 setAllowBeanDefinitionOverriding(true)，允许"重名"的bean的覆盖注册
 	/**
 	 * Return whether it should be allowed to override bean definitions by registering
 	 * a different definition with the same name, automatically replacing the former.
 	 * @since 4.1.2
 	 */
 	public boolean isAllowBeanDefinitionOverriding() {
+		setAllowBeanDefinitionOverriding(true);
 		return this.allowBeanDefinitionOverriding;
 	}
 
@@ -337,9 +343,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	// Implementation of remaining BeanFactory methods
 	//---------------------------------------------------------------------
 
+	// TODO wdy hotswap 对于 getBean method，class不同则override掉（使用CtNewMethod.delegator），并在after插桩
 	@Override
 	public <T> T getBean(Class<T> requiredType) throws BeansException {
 		return getBean(requiredType, (Object[]) null);
+		// org.hotswap.agent.plugin.spring.getbean.ProxyReplacer.register
 	}
 
 	@SuppressWarnings("unchecked")
@@ -351,6 +359,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			throw new NoSuchBeanDefinitionException(requiredType);
 		}
 		return (T) resolved;
+		// org.hotswap.agent.plugin.spring.getbean.ProxyReplacer.register
 	}
 
 	@Override
@@ -839,8 +848,14 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		clearByTypeCache();
 	}
 
+	// TODO wdy hotswap时此方法不可被disbale，因为会导致性能锐减。代替方案是在此方法前插入：
+	// call freezeConfiguration after each bean (re)definition and clear all caches
 	@Override
 	public void freezeConfiguration() {
+
+		// org.hotswap.agent.plugin.spring.ResetSpringStaticCaches.resetBeanNamesByType(this);
+		setAllowRawInjectionDespiteWrapping(true);
+
 		this.configurationFrozen = true;
 		this.frozenBeanDefinitionNames = StringUtils.toStringArray(this.beanDefinitionNames);
 	}

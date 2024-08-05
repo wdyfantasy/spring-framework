@@ -302,6 +302,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	}
 
 
+	// FIXME wdy hotswap insertAfter
 	/**
 	 * Scan the class path for candidate components.
 	 * @param basePackage the package to check for annotated classes
@@ -314,6 +315,13 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 		else {
 			return scanCandidateComponents(basePackage);
 		}
+		// 返回前，初始化一个agent并注册basePackage
+//		org.hotswap.agent.plugin.spring.scanner.ClassPathBeanDefinitionScannerAgent
+//				.getInstance((org.springframework.context.annotation.ClassPathBeanDefinitionScanner)this).
+//				registerBasePackage($1);
+		// to invoke spring plugin method : registerComponentScanBasePackage
+		// 注册transformer和watcher，都会发出ClassPathBeanRefreshCommand指令
+		// command 会执行 refreshClass
 	}
 
 	/**

@@ -176,6 +176,10 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * @param allowEarlyReference whether early references should be created or not
 	 * @return the registered singleton object, or {@code null} if none found
 	 */
+	// TODO 三级缓存，解决单例bean的循环依赖问题
+//	singletonObjects：一级缓存，实例化的Bean都会存储在这个Map集合中。
+//	earlySingletonObjects：二级缓存，存放未完成的bean的缓存，如果有代理的话，存放的是代理对象。
+//	singletonFactories：三级缓存，存放的是一个ObjectFactory，数据通过getObject方法获得。
 	@Nullable
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
 		// Quick check for existing instance without full singleton lock
@@ -211,6 +215,10 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * with, if necessary
 	 * @return the registered singleton object
 	 */
+	// TODO 三级缓存，解决单例bean的循环依赖问题
+//	singletonObjects：一级缓存，实例化的Bean都会存储在这个Map集合中。
+//	earlySingletonObjects：二级缓存，存放未完成的bean的缓存，如果有代理的话，存放的是代理对象。
+//	singletonFactories：三级缓存，存放的是一个ObjectFactory，数据通过getObject方法获得。
 	public Object getSingleton(String beanName, ObjectFactory<?> singletonFactory) {
 		Assert.notNull(beanName, "Bean name must not be null");
 		synchronized (this.singletonObjects) {

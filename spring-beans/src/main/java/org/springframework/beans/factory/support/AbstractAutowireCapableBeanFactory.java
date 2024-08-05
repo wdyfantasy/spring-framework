@@ -590,6 +590,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Initialize the bean instance.
 		Object exposedObject = bean;
 		try {
+			// TODO 调用初始化方法，先去调用@PostConstruct注解方法，然后调用InitializingBean的afterPropertiesSet，
+			// 以及自定义的init-method方法。在Bean调用初始化方法之后，再去调用后置处理器接口检测是否需要生成Aop代理
 			populateBean(beanName, mbd, instanceWrapper);
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
@@ -603,6 +605,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 
+		// TODO 三级缓存校验
 		if (earlySingletonExposure) {
 			Object earlySingletonReference = getSingleton(beanName, false);
 			if (earlySingletonReference != null) {

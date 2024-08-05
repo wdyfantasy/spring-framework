@@ -115,7 +115,8 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 
 
 	/**
-	 * Register each bean definition within the given root {@code <beans/>} element.
+	 * Register each bean definition within the given root {@code <beans/>}
+	 * Element指的就是这个最外层的beans元素
 	 */
 	@SuppressWarnings("deprecation")  // for Environment.acceptsProfiles(String...)
 	protected void doRegisterBeanDefinitions(Element root) {
@@ -128,7 +129,9 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		BeanDefinitionParserDelegate parent = this.delegate;
 		this.delegate = createDelegate(getReaderContext(), root, parent);
 
+		// TODO 是否是默认命名空间，即"beans"，"import", "alias", "bean"，这里是根结点，一般是beans
 		if (this.delegate.isDefaultNamespace(root)) {
+			// TODO <beans profile="dev",如果有profile,看当前环境是否需要读取该profile的配置，所以可以利用这个功能，创建多个不同profile的spring配置文件，启动项目的时候指定用哪个profile
 			String profileSpec = root.getAttribute(PROFILE_ATTRIBUTE);
 			if (StringUtils.hasText(profileSpec)) {
 				String[] specifiedProfiles = StringUtils.tokenizeToStringArray(
@@ -146,6 +149,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		}
 
 		preProcessXml(root);
+		// TODO ！！！看这个方法
 		parseBeanDefinitions(root, this.delegate);
 		postProcessXml(root);
 

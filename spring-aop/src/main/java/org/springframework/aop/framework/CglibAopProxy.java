@@ -224,12 +224,17 @@ class CglibAopProxy implements AopProxy, Serializable {
 				enhancer.create());
 	}
 
+	// TODO wdy hotswap 禁用enhancer缓存机制，useCache=false
 	/**
 	 * Creates the CGLIB {@link Enhancer}. Subclasses may wish to override this to return a custom
 	 * {@link Enhancer} implementation.
 	 */
 	protected Enhancer createEnhancer() {
-		return new Enhancer();
+//		return new Enhancer();
+
+		Enhancer enhancer = new Enhancer();
+		enhancer.setUseCache(false);
+		return enhancer;
 	}
 
 	/**
